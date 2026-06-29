@@ -1,3 +1,4 @@
+import fcswrite
 import pandas as pd
 import streamlit as st
 import plotly.express as px
@@ -7,16 +8,20 @@ if "uploader_key" not in st.session_state:
 
 uploaded_files = st.file_uploader("Upload FACS Data Folder Here", accept_multiple_files = True, type = ["fcs"], key=f"uploader_key_{st.session_state.uploader_key}")
 
+variables = {}
+
 def clear_files_on_click():
   if uploaded_files is not None:
     st.session_state.uploader_key += 1
 
 def fcs_to_csv(fcs_file):
-  print("fcs_to_csv")
+  meta, data, channels = fcswrite.read_fcs(fcs_file.name)
+  variables += channels
+  return pd.DataFrame(data, columns = channels)
 
-files_csvs = {file.name : fcs_to_csv(file) for file in uploaded_files} # Needs to be file.keyword, not just file
+files_csvs = {file.name : fcs_to_csv(file) for file in uploaded_files} # Needs to be file.keyword, not just file (pull byte data or something like that?)
 
-clear_files = st.button("Clear Uploaded Files", on_click = clear_files_on_click)#, help = "Warning: Clearing the downloads automatically requires rerunning the page")
+clear_files = st.button("Clear Uploaded Files", on_click = clear_files_on_click) #, help = "Warning: Clearing the downloads automatically requires rerunning the page")
 
 files = []
 
