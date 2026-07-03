@@ -3,8 +3,8 @@ import flowio
 import numpy as np
 import pandas as pd
 import streamlit as st
-import radio_buttons as rad
-# import plotly.express as px
+# import radio_buttons as rad
+import plotly.express as px
 
 st.session_state.setdefault("facs_dataframes", [])
 st.session_state.setdefault("uploader_key", 0)
