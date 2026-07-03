@@ -3,14 +3,10 @@ import flowio
 import numpy as np
 import pandas as pd
 import streamlit as st
-# import radio_buttons as rad
 import plotly.express as px
 
 st.session_state.setdefault("facs_dataframes", [])
 st.session_state.setdefault("uploader_key", 0)
-
-
-variables = {}
 
 @st.cache_data
 def load_fcs(uploaded_file_bytes):
@@ -18,7 +14,15 @@ def load_fcs(uploaded_file_bytes):
   return pd.DataFrame(flow.as_array(), columns = flow.pnn_labels), flow.text
 
 def load_all_fcs():
-  files = st.session_state[f"uploader_key_{st.session_state.uploader_key}"]
+  """Loads all the fcs files from the file uploader to Pandas dataframes. The file name, data (newly created Pandas dataframe), and metadata are stored in a dict {"name", "data", "metadata"}, which is stored in the list contained in st.session_state.facs_dataframes.
+
+  Args:
+    None:
+    
+  Returns:
+    None:
+  """
+  files = st.session_state[f"uploader_key_{st.session_state.uploader_key}"] # Could I use `uploaded_files` in places of `files`?
   if files:
     for file in [file for file in files if "._" not in file.name]:
       df, metadata = load_fcs(file.getvalue())
