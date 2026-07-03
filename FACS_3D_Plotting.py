@@ -34,9 +34,6 @@ uploaded_files = st.file_uploader("Upload FCS file", type = ["fcs"], key=f"uploa
 
 clear_files = st.button("Clear Uploaded Files", on_click = clear_files_on_click) #, help = "Warning: Clearing the downloads automatically requires rerunning the page")
 
-# for i, uploaded_file in enumerate(uploaded_files):
-#   files.append(pd.read_csv(uploaded_file))
-
 def files_selected_formatting(file):
   return file["name"][:file["name"].rfind(".")]
 
@@ -52,13 +49,9 @@ files_selected = st.multiselect(label = "Files", options = [file for file in st.
 
 selectbox_columns = st.columns(3)
 
-for i, column in enumerate(selectbox_columns): # [st.session_state.facs_dataframes[file_name + ".fcs"] for file_name in files_selected]
-  with column:
-    st.selectbox(label = ["x-axis", "y-axis", "z-axis"][i], options = ["No Selection"] + list(set(key for df in files_selected for key in df["data"].keys())), key = f"axis{i}", disabled = len(files_selected) == 0)
-
-# Should make three inter-connected dropdowns instead of using radio buttons
-# if len(st.session_state.facs_dataframes) > 0:
-  # rad.radio_buttons_exclusive(row_labels = list(set(key for df in st.session_state.facs_dataframes for key in df["data"].keys())), col_headers = ["x-axis", "y-axis", "z-axis"])
-
-# if len(files_selected) == 3:
-#   print("plot stuff")
+with selectbox_columns[0]:
+  x_select = st.selectbox(label = "x-axis", options = ["No Selection"] + list(set(key for df in files_selected for key in df["data"].keys())), key = "x-axis", disabled = len(files_selected) == 0)
+with selectbox_columns[1]:
+  y_select = st.selectbox(label = "y-axis", options = ["No Selection"] + list(set(key for df in files_selected for key in df["data"].keys())), key = "y-axis", disabled = len(files_selected) == 0)
+with selectbox_columns[2]:
+  z_select = st.selectbox(label = "z-axis", options = ["No Selection"] + list(set(key for df in files_selected for key in df["data"].keys())), key = "z-axis", disabled = len(files_selected) == 0)
