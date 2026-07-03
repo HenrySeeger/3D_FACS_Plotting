@@ -55,3 +55,29 @@ with selectbox_columns[1]:
   y_select = st.selectbox(label = "y-axis", options = ["No Selection"] + list(set(key for df in files_selected for key in df["data"].keys())), key = "y-axis", disabled = len(files_selected) == 0)
 with selectbox_columns[2]:
   z_select = st.selectbox(label = "z-axis", options = ["No Selection"] + list(set(key for df in files_selected for key in df["data"].keys())), key = "z-axis", disabled = len(files_selected) == 0)
+
+def num_axes():
+  st.text((x_select != "No Selection") + (y_select != "No Selection") + (z_select != "No Selection"))
+  return (x_select != "No Selection") + (y_select != "No Selection") + (z_select != "No Selection")
+
+match num_axes():
+  case 1:
+    for select in [x_select, y_select, z_select]:
+      if select != "No Selection":
+        # Histogram code here
+        st.text("Single")
+        break
+  case 2:
+    for select in [x_select, y_select, z_select]:
+      selections = [val for val in [x_select, y_select, z_select] if val != select]
+      if select == "No Selection":
+        for file in files_selected:
+          pxFig = px.scatter(x = file["data"][selections[0]], y = file["data"][selections[1]])
+        pxFig.update_xaxes(showline = True, linecolor = 'black', linewidth = 2, title_font_color = "black", tickfont_color = "black")
+        pxFig.update_yaxes(showline = True, linecolor = 'black', linewidth = 2, title_font_color = "black", tickfont_color = "black", showgrid = False)
+        pxFig.update_layout(paper_bgcolor = "white", plot_bgcolor = "white", legend_font_color = "black", legend_title_font_color = "black")
+        st.plotly_chart(pxFig)
+        break
+  case 3:
+    # 3D scatter code here
+    st.text("Triple")
