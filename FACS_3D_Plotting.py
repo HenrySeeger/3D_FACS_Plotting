@@ -3,9 +3,8 @@ import flowio
 import numpy as np
 import pandas as pd
 import streamlit as st
-from fcsparser import parse
 import radio_buttons as rad
-import plotly.express as px
+# import plotly.express as px
 
 st.session_state.setdefault("facs_dataframes", [])
 st.session_state.setdefault("uploader_key", 0)
@@ -48,8 +47,9 @@ if uploaded_files is not None:# and len(files) > 0:
   # # fig.update_zaxes(title_text = "SREBP1")
   # st.plotly_chart(fig)
 
-if len(st.session_state.facs_dataframes) > 0:
-  rad.radio_buttons_exclusive(row_labels = list(st.session_state.facs_dataframes[0]["data"].keys()), col_headers = ["x-axis", "y-axis", "z-axis"])
+# Should make three inter-connected dropdowns instead of using radio buttons
+# if len(st.session_state.facs_dataframes) > 0:
+#   rad.radio_buttons_exclusive(row_labels = list(set(key for df in st.session_state.facs_dataframes for key in df["data"].keys())), col_headers = ["x-axis", "y-axis", "z-axis"])
 
 # if len(files_selected) == 3:
 #   print("plot stuff")
