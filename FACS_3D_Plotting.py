@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 
-st.session_state.setdefault("facs_dataframes", [])
+st.session_state.setdefault("facs_dataframes",[])
 st.session_state.setdefault("uploader_key", 0)
 
 @st.cache_data
@@ -75,12 +75,48 @@ match num_axes():
     for select in [x_select, y_select, z_select]:
       selections = [val for val in [x_select, y_select, z_select] if val != select]
       if select == "No Selection":
-        for file in files_selected:
-          pxFig = px.scatter(x = file["data"][selections[0]], y = file["data"][selections[1]])
-        pxFig.update_xaxes(showline = True, linecolor = 'black', linewidth = 2, title_font_color = "black", tickfont_color = "black")
-        pxFig.update_yaxes(showline = True, linecolor = 'black', linewidth = 2, title_font_color = "black", tickfont_color = "black", showgrid = False)
-        pxFig.update_layout(paper_bgcolor = "white", plot_bgcolor = "white", legend_font_color = "black", legend_title_font_color = "black")
-        st.plotly_chart(pxFig)
+        figure = px.scatter(x = files_selected[0]["data"][selections[0]], y = files_selected[0]["data"][selections[1]])
+        for file in files_selected[1:]:
+          temp_fig = px.scatter(x = file["data"][selections[0]], y = file["data"][selections[1]])
+          temp_fig.update_traces(marker = {"color" :"rgba(255, 0, 0, 1)"})
+          figure.add_traces(temp_fig.data)
+        # figure.update_xaxes(showline = True, linecolor = 'black', linewidth = 2, title_font_color = "black", tickfont_color = "black", showgrid = False, type = "log")
+        # figure.update_yaxes(showline = True, linecolor = 'black', linewidth = 2, title_font_color = "black", tickfont_color = "black", showgrid = False, type = "log")
+        # figure.update_layout(paper_bgcolor = "white", plot_bgcolor = "white", legend_font_color = "black", legend_title_font_color = "black")
+        figure.update_xaxes(showline = True,
+                            linewidth = 1,
+                            linecolor = "black",
+                            mirror = True,
+                            title_font_color = "black",
+                            tickfont_color = "black",
+                            ticks = "outside",
+                            ticklen = 6,
+                            tickwidth = 1,
+                            showgrid = False)
+        
+        figure.update_yaxes(showline = True,
+                            linewidth = 1,
+                            linecolor = "black",
+                            mirror = True,
+                            title_font_color = "black",
+                            tickfont_color = "black",
+                            range = [1000000, None],
+                            ticks = "outside",
+                            ticklen = 6,tickwidth = 1,
+                            showgrid = False)
+        
+        figure.update_layout(plot_bgcolor = "white",
+                             paper_bgcolor = "white",
+                             font = {"family" : "Arial",
+                                     "size" : 16,
+                                     "color" : "black"},
+                             legend = {"bgcolor" : "rgba(255,255,255,0)",
+                                       "borderwidth" : 0},
+                             width = 700,
+                             height = 500,
+                             margin = {"l" : 50, "r" : 20, "t" : 30, "b" : 50})
+        figure.update_traces(marker = {"size" : 8})
+        st.plotly_chart(figure)
         break
   case 3:
     # 3D scatter code here
