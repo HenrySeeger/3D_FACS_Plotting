@@ -60,11 +60,50 @@ with selectbox_columns[1]:
 with selectbox_columns[2]:
   z_select = st.selectbox(label = "z-axis", options = ["No Selection"] + list(set(key for df in files_selected for key in df["data"].keys())), key = "z-axis", disabled = len(files_selected) == 0)
 
-def num_axes():
-  st.text((x_select != "No Selection") + (y_select != "No Selection") + (z_select != "No Selection"))
-  return (x_select != "No Selection") + (y_select != "No Selection") + (z_select != "No Selection")
+def plt_formatting(fig):
+  fig.update_xaxes(showline = True,
+                   linewidth = 1,
+                   linecolor = "black",
+                   mirror = True,
+                   title_font_color = "black",
+                   tickfont_color = "black",
+                   ticks = "outside",
+                   ticklen = 6,
+                   tickwidth = 1,
+                   showgrid = False)
+  xmax = max(trace.x.max() for trace in fig.data)
+  fig.update_xaxes(range=[0, xmax * 1.05])
+        
+  fig.update_yaxes(showline = True,
+                   linewidth = 1,
+                   linecolor = "black",
+                   mirror = True,
+                   title_font_color = "black",
+                   tickfont_color = "black",
+                   ticks = "outside",
+                   ticklen = 6,
+                   tickwidth = 1,
+                   showgrid = False,
+                   zeroline = False)
+  ymax = max(trace.y.max() for trace in fig.data)
+  fig.update_yaxes(range=[0, ymax * 1.05])
+        # print(fig.layout.yaxis)
+        
+  fig.update_layout(plot_bgcolor = "white",
+                    paper_bgcolor = "white",
+                    font = {"family" : "Arial",
+                            "size" : 16,
+                            "color" : "black"},
+                    legend = {"bgcolor" : "rgba(255,255,255,0)",
+                              "borderwidth" : 0},
+                    width = 700,
+                    height = 500,
+                    margin = {"l" : 50, "r" : 20, "t" : 30, "b" : 50})
+  fig.update_traces(marker = {"size" : 4})
 
-match num_axes():
+  return fig
+
+match (x_select != "No Selection") + (y_select != "No Selection") + (z_select != "No Selection"): # Number of axes with selections
   case 1:
     for select in [x_select, y_select, z_select]:
       if select != "No Selection":
@@ -83,40 +122,8 @@ match num_axes():
         # figure.update_xaxes(showline = True, linecolor = 'black', linewidth = 2, title_font_color = "black", tickfont_color = "black", showgrid = False, type = "log")
         # figure.update_yaxes(showline = True, linecolor = 'black', linewidth = 2, title_font_color = "black", tickfont_color = "black", showgrid = False, type = "log")
         # figure.update_layout(paper_bgcolor = "white", plot_bgcolor = "white", legend_font_color = "black", legend_title_font_color = "black")
-        figure.update_xaxes(showline = True,
-                            linewidth = 1,
-                            linecolor = "black",
-                            mirror = True,
-                            title_font_color = "black",
-                            tickfont_color = "black",
-                            ticks = "outside",
-                            ticklen = 6,
-                            tickwidth = 1,
-                            showgrid = False)
         
-        figure.update_yaxes(showline = True,
-                            linewidth = 1,
-                            linecolor = "black",
-                            mirror = True,
-                            title_font_color = "black",
-                            tickfont_color = "black",
-                            range = [1000000, None],
-                            ticks = "outside",
-                            ticklen = 6,tickwidth = 1,
-                            showgrid = False)
-        
-        figure.update_layout(plot_bgcolor = "white",
-                             paper_bgcolor = "white",
-                             font = {"family" : "Arial",
-                                     "size" : 16,
-                                     "color" : "black"},
-                             legend = {"bgcolor" : "rgba(255,255,255,0)",
-                                       "borderwidth" : 0},
-                             width = 700,
-                             height = 500,
-                             margin = {"l" : 50, "r" : 20, "t" : 30, "b" : 50})
-        figure.update_traces(marker = {"size" : 8})
-        st.plotly_chart(figure)
+        st.plotly_chart(plt_formatting(figure))
         break
   case 3:
     # 3D scatter code here
