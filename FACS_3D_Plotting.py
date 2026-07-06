@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import plotly.express as px
+import matplotlib.pyplot as plt
 
 st.session_state.setdefault("facs_dataframes",[])
 st.session_state.setdefault("uploader_key", 0)
@@ -73,7 +74,7 @@ def plt_formatting(fig):
                    showgrid = False)
   xmax = max(trace.x.max() for trace in fig.data)
   fig.update_xaxes(range=[0, xmax * 1.05])
-        
+  
   fig.update_yaxes(showline = True,
                    linewidth = 1,
                    linecolor = "black",
@@ -87,7 +88,6 @@ def plt_formatting(fig):
                    zeroline = False)
   ymax = max(trace.y.max() for trace in fig.data)
   fig.update_yaxes(range=[0, ymax * 1.05])
-        # print(fig.layout.yaxis)
         
   fig.update_layout(plot_bgcolor = "white",
                     paper_bgcolor = "white",
@@ -95,6 +95,8 @@ def plt_formatting(fig):
                             "size" : 16,
                             "color" : "black"},
                     legend = {"bgcolor" : "rgba(255,255,255,0)",
+                              "font_color" : "black",
+                              "title_font_color" : "black",
                               "borderwidth" : 0},
                     width = 700,
                     height = 500,
@@ -114,15 +116,16 @@ match (x_select != "No Selection") + (y_select != "No Selection") + (z_select !=
     for select in [x_select, y_select, z_select]:
       selections = [val for val in [x_select, y_select, z_select] if val != select]
       if select == "No Selection":
+        colors = [plt.get_cmap("hsv")(i/len(files_selected)) for i in range(len(files_selected))]
+        colors = [f"rgba({255 * color[0]}, {255 * color[1]}, {255 * color[2]}, {color[3] * 0.8})" for color in colors]
         figure = px.scatter(x = files_selected[0]["data"][selections[0]], y = files_selected[0]["data"][selections[1]])
-        for file in files_selected[1:]:
+        figure.update_traces(marker = {"color" : colors[0]})
+        for i, file in enumerate(files_selected[1:]):
           temp_fig = px.scatter(x = file["data"][selections[0]], y = file["data"][selections[1]])
-          temp_fig.update_traces(marker = {"color" :"rgba(255, 0, 0, 1)"})
+          temp_fig.update_traces(marker = {"color" : colors[i + 1]})
           figure.add_traces(temp_fig.data)
-        # figure.update_xaxes(showline = True, linecolor = 'black', linewidth = 2, title_font_color = "black", tickfont_color = "black", showgrid = False, type = "log")
-        # figure.update_yaxes(showline = True, linecolor = 'black', linewidth = 2, title_font_color = "black", tickfont_color = "black", showgrid = False, type = "log")
-        # figure.update_layout(paper_bgcolor = "white", plot_bgcolor = "white", legend_font_color = "black", legend_title_font_color = "black")
-        
+        figure.update_xaxes(title_text = selections[0])
+        figure.update_yaxes(title_text = selections[1])
         st.plotly_chart(plt_formatting(figure))
         break
   case 3:
