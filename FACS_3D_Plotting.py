@@ -6,6 +6,7 @@ import streamlit as st
 import plotly.express as px
 import text_formatting as tf
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 st.session_state.setdefault("facs_dataframes",[])
 st.session_state.setdefault("uploader_key", 0)
@@ -65,6 +66,8 @@ def plt_formatting(fig):
                    ticklen = 6,
                    tickwidth = 1,
                    showgrid = False)
+  xmax = max(trace.x.max() for trace in fig.data)
+  fig.update_xaxes(range=[0, xmax * 1.05])
   
   fig.update_yaxes(showline = True,
                    linewidth = 1,
@@ -109,13 +112,26 @@ match (x_select != "No Selection") + (y_select != "No Selection") + (z_select !=
       if select == "No Selection":
         colors = [plt.get_cmap("hsv")(i/len(files_selected)) for i in range(len(files_selected))]
         opacity_slider = st.slider("Opacity", 0.0, 1.0, 1.0, 0.01)
-        colors = [f"rgba({255 * color[0]}, {255 * color[1]}, {255 * color[2]}, {color[3] * opacity_slider})" for color in colors]
-        figure = px.scatter(x = files_selected[0]["data"][selections[0]], y = files_selected[0]["data"][selections[1]])
-        figure.update_traces(marker = {"color" : colors[0]})
-        for i, file in enumerate(files_selected[1:]):
-          temp_fig = px.scatter(x = file["data"][selections[0]], y = file["data"][selections[1]])
-          temp_fig.update_traces(marker = {"color" : colors[i + 1]})
-          figure.add_traces(temp_fig.data)
+        opacity_dropoff_slider = st.slider("Opacity Dropoff", 0.0, 5.0, 0.0, 0.01)
+        colors = [f"rgba({255 * color[0]}, {255 * color[1]}, {255 * color[2]}, {pow(color[3] * opacity_slider, 1/(opacity_dropoff_slider*i+1))})" for i, color in enumerate(colors)]
+        st.text(colors)
+        # figure = px.scatter(x = files_selected[0]["data"][selections[0]], y = files_selected[0]["data"][selections[1]])
+        figure = go.Scatter(x = files_selected[0]["data"][selections[0]],
+                   y = files_selected[0]["data"][selections[1]],
+                  mode = "markers",
+                  marker = {"color" : colors[0]}
+            )
+        # figure.update_traces(marker = {"color" : colors[0]})
+        for file, color in zip(files_selected[1:], colors[1:]):
+          # temp_fig = px.scatter(x = file["data"][selections[0]], y = file["data"][selections[1]])
+          # temp_fig.update_traces(marker = {"color" : color})
+          # figure.add_traces(temp_fig.data)
+          figure.add_trace(
+            go.Scatter(x = file["data"][selections[0]],
+                       y = file["data"][selections[1]],
+                       mode = "markers",
+                       marker = {"color" : color}
+            ))
         
         figure.update_xaxes(title_text = selections[0],
                             # type = "log",
@@ -126,7 +142,7 @@ match (x_select != "No Selection") + (y_select != "No Selection") + (z_select !=
                             )
         
         figure.update_yaxes(title_text = selections[1],
-                            type = "log"
+                            # type = "log",
                             # range = [3, 7],
                             # tickmode = "array",
                             # tickvals = [pow(10, n) for n in range(3, 8)],
