@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import plotly.express as px
+import text_formatting as tf
 import matplotlib.pyplot as plt
 
 st.session_state.setdefault("facs_dataframes",[])
@@ -107,18 +108,37 @@ match (x_select != "No Selection") + (y_select != "No Selection") + (z_select !=
       selections = [val for val in [x_select, y_select, z_select] if val != select]
       if select == "No Selection":
         colors = [plt.get_cmap("hsv")(i/len(files_selected)) for i in range(len(files_selected))]
-        colors = [f"rgba({255 * color[0]}, {255 * color[1]}, {255 * color[2]}, {color[3] * 0.8})" for color in colors]
+        opacity_slider = st.slider("Opacity", 0.0, 1.0, 1.0, 0.01)
+        colors = [f"rgba({255 * color[0]}, {255 * color[1]}, {255 * color[2]}, {color[3] * opacity_slider})" for color in colors]
         figure = px.scatter(x = files_selected[0]["data"][selections[0]], y = files_selected[0]["data"][selections[1]])
         figure.update_traces(marker = {"color" : colors[0]})
         for i, file in enumerate(files_selected[1:]):
           temp_fig = px.scatter(x = file["data"][selections[0]], y = file["data"][selections[1]])
           temp_fig.update_traces(marker = {"color" : colors[i + 1]})
           figure.add_traces(temp_fig.data)
-        xmax = max(trace.x.max() for trace in figure.data)
-        figure.update_xaxes(title_text = selections[0], range=[0, xmax * 1.05])
-        ymax = max(trace.y.max() for trace in figure.data)
-        figure.update_yaxes(title_text = selections[1], range=[0, ymax * 1.05])
+        
+        figure.update_xaxes(title_text = selections[0],
+                            # type = "log",
+                            # range = [3, 7],
+                            # tickmode = "array",
+                            # tickvals = [pow(10, n) for n in range(3, 8)],
+                            # ticktext = ["10" + tf.exp(n) for n in range(3, 8)]
+                            )
+        
+        figure.update_yaxes(title_text = selections[1],
+                            type = "log"
+                            # range = [3, 7],
+                            # tickmode = "array",
+                            # tickvals = [pow(10, n) for n in range(3, 8)],
+                            # ticktext = ["10" + tf.exp(n) for n in range(3, 8)]
+                            )
+
+        # figure.update_layout(height = 800)
+                            #  xaxis = {"tickmode" : "array",
+        #                               "tickvals" : [pow(10, n) for n in range(3, 8)],
+        #                               "ticktext" : ["10" + tf.exp(n) for n in range(3, 8)]})
         st.plotly_chart(plt_formatting(figure))
+
         break
   case 3:
     # 3D scatter code here
