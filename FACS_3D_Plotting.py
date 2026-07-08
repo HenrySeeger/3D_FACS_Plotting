@@ -1,6 +1,7 @@
 import io
 import math
 import flowio
+import textwrap
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -116,12 +117,12 @@ match (x_select != "No Selection") + (y_select != "No Selection") + (z_select !=
         opacity_dropoff_slider = st.slider("Opacity Dropoff", 0.0, 5.0, 0.0, 0.01)
         colors = [f"rgba({255 * color[0]}, {255 * color[1]}, {255 * color[2]}, {pow(color[3] * opacity_slider, 1/(opacity_dropoff_slider*i+1))})" for i, color in enumerate(colors)]
         st.text(colors)
-        # figure = px.scatter(x = files_selected[0]["data"][selections[0]], y = files_selected[0]["data"][selections[1]])
-        figure = go.Scatter(x = files_selected[0]["data"][selections[0]],
-                   y = files_selected[0]["data"][selections[1]],
-                  mode = "markers",
-                  marker = {"color" : colors[0]}
-            )
+        figure = px.scatter(x = files_selected[0]["data"][selections[0]], y = files_selected[0]["data"][selections[1]])
+        # figure = go.Scatter(x = files_selected[0]["data"][selections[0]],
+        #            y = files_selected[0]["data"][selections[1]],
+        #           mode = "markers",
+        #           marker = {"color" : colors[0]}
+        #     )
         # figure.update_traces(marker = {"color" : colors[0]})
         for file, color in zip(files_selected[1:], colors[1:]):
           # temp_fig = px.scatter(x = file["data"][selections[0]], y = file["data"][selections[1]])
@@ -167,9 +168,22 @@ if (x_select != "No Selection") + (y_select != "No Selection") + (z_select != "N
       selections = [val for val in [x_select, y_select, z_select] if val != select]
       colors = ["red", "blue"]
       files = [file for file in st.session_state.facs_dataframes if "Reference Group" not in file["name"] and "Unmixed" in file["name"]]
-      fig, axs = plt.subplots(nrows = math.ceil(len(files) / 2 / 5), ncols = 5)
-      axs = [ax for row in axs for ax in row]
+      fig, axs = plt.subplots(nrows = 5, ncols = 5, figsize = (24, 30)) # math.ceil(len(files) / 2 / 5)
+      # axs = [ax for row in axs for ax in row]
+      axs = axs.flatten()
       for i in range(0, len(files), 2):
-        axs[i / 2].scatter(file["data"][selections[0]], file["data"][selections[1]])
+        ax = axs[int(i / 2)]
+        file = files[int(i / 2)]
+        ax.scatter(file["data"][selections[0]], file["data"][selections[1]], s = 2, color = colors[0])
+        ax.set_title(textwrap.fill(file["name"][file["name"].index("TubeRack"):file["name"].index(".fcs")]), 30)
+
+        ax.set_xlabel(selections[0])
+        ax.set_xscale("log")
+        ax.set_xlim(left = 1, right = pow(10, 7))
+
+        ax.set_ylabel(selections[1])
+        ax.set_yscale("log")
+        ax.set_ylim(bottom = 1, top = pow(10, 7))
+        
       st.pyplot(fig)
       break
