@@ -1,4 +1,5 @@
 import io
+import math
 import flowio
 import numpy as np
 import pandas as pd
@@ -159,3 +160,16 @@ match (x_select != "No Selection") + (y_select != "No Selection") + (z_select !=
   case 3:
     # 3D scatter code here
     st.text("Triple")
+
+if (x_select != "No Selection") + (y_select != "No Selection") + (z_select != "No Selection") == 2:
+  for select in [x_select, y_select, z_select]:
+    if select == "No Selection":
+      selections = [val for val in [x_select, y_select, z_select] if val != select]
+      colors = ["red", "blue"]
+      files = [file for file in st.session_state.facs_dataframes if "Reference Group" not in file["name"] and "Unmixed" in file["name"]]
+      fig, axs = plt.subplots(nrows = math.ceil(len(files) / 2 / 5), ncols = 5)
+      axs = [ax for row in axs for ax in row]
+      for i in range(0, len(files), 2):
+        axs[i / 2].scatter(file["data"][selections[0]], file["data"][selections[1]])
+      st.pyplot(fig)
+      break
