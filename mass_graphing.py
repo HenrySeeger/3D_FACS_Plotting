@@ -30,7 +30,7 @@ def load_all_fcs():
   st.session_state.facs_dataframes = []
   files = st.session_state[f"uploader_key_{st.session_state.uploader_key}"] # Could I use `uploaded_files` in places of `files`?
   if files:
-    for file in [file for file in files if "._" not in file.name]:
+    for file in [file for file in files if "._" not in file.name and "Unmixed" in file.name]:
       if file.name not in [file2["name"] for file2 in st.session_state.facs_dataframes]:
         df, metadata = load_fcs(file.getvalue())
         st.session_state.facs_dataframes.append({"name" : file.name, "data" : df, "metadata" : metadata})
@@ -45,13 +45,6 @@ uploaded_files = st.file_uploader("Upload FCS file", type = ["fcs"], key=f"uploa
 
 clear_files = st.button("Clear Uploaded Files", on_click = clear_files_on_click) #, help = "Warning: Clearing the downloads automatically requires rerunning the page")
 
-# def files_selected_formatting(file):
-#   return file["name"][:file["name"].rfind(".")]
-
-# if not uploaded_files:
-#   st.session_state.facs_dataframes = []
-# files_selected = st.multiselect(label = "Files", options = [file for file in st.session_state.facs_dataframes if "._" not in file["name"]], format_func = files_selected_formatting, default = [], placeholder = "No files selected")
-
 st.text([file["name"] for file in st.session_state.facs_dataframes])
 
 selectbox_columns = st.columns(2)
@@ -61,8 +54,29 @@ with selectbox_columns[0]:
 with selectbox_columns[1]:
   y_select = st.selectbox(label = "y-axis", options = ["No Selection"] + list(set(key for df in st.session_state.facs_dataframes for key in df["data"].keys())), key = "y-axis", disabled = len(st.session_state.facs_dataframes) == 0)
 
+def filter_cells(df):
+  # Live Cells
+  x = df["FSC-H"]
+  y = df["SSC-H"]
+  w = 2.54
+  h = 1.29
+  d = math.pi * 7 / 8
+  a = 2.08
+  b = 2.18
+
+  df = df
+
+  # Zombie (if present)
+
+  # Single Cells
+  return df
+st.text(math.sin(3.14))
+
 if x_select != "No Selection" and y_select != "No Selection":
   colors = ["red", "blue"]
+  opacity_slider1 = st.slider("Mock Opacity", 0.0, 1.0, 1.0, 0.01)
+  opacity_slider2 = st.slider("Dox Opacity", 0.0, 1.0, 1.0, 0.01)
+  colors = [(1, 0, 0, opacity_slider1), (0, 0, 1, opacity_slider2)]
   files = [file for file in st.session_state.facs_dataframes if "Reference Group" not in file["name"] and "Unmixed" in file["name"]]
   fig, axs = plt.subplots(nrows = 5, ncols = 5, figsize = (24, 30)) # math.ceil(len(files) / 2 / 5)
   # axs = [ax for row in axs for ax in row]
@@ -71,8 +85,8 @@ if x_select != "No Selection" and y_select != "No Selection":
     ax = axs[int(i / 2)]
     file_mock = files[i - 1]
     file_dox = files[i]
-    ax.scatter(file_mock["data"][x_select], file_mock["data"][y_select], s = 2, color = colors[0])
-    ax.scatter(file_dox["data"][x_select], file_dox["data"][y_select], s = 2, color = colors[1])
+    ax.scatter(file_mock["data"][x_select], file_mock["data"][y_select], s = 1, color = colors[0])
+    ax.scatter(file_dox["data"][x_select], file_dox["data"][y_select], s = 1, color = colors[1])
     ax.set_title(textwrap.fill(file_mock["name"][file_mock["name"].index("TubeRack"):file_mock["name"].index(".fcs")], 30))
 
     ax.set_xlabel(x_select)
