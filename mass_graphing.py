@@ -56,17 +56,15 @@ with selectbox_columns[1]:
 
 def filter_cells(df):
   # Live Cells
-  x = df["FSC-H"]
-  y = df["SSC-H"]
-  w = 2.54
-  h = 1.29
-  d = math.pi * 7 / 8
-  a = 2.08
-  b = 2.18
-
-  df = df
+  def oval(x, y, semi_major, semi_minor, x_offset, y_offset, rads = 0, default_sin = None, default_cos = None):
+    sin_theta = math.sin(rads) if default_sin is None else default_sin
+    cos_theta = math.cos(rads) if default_cos is None else default_cos
+    return ((x - x_offset) * cos_theta - (y - y_offset) * sin_theta)**2 / semi_major**2 + ((x - x_offset) * sin_theta + (y - y_offset) * cos_theta)**2 / semi_minor**2
+  df = df[oval(df["FSC-H"], df["SSC-H"], 2.54, 1.29, 2.08, 2.18, math.pi * 1.75) <= 1]
 
   # Zombie (if present)
+  if "Zombie" in df.keys():
+    print("stuff")
 
   # Single Cells
   return df
