@@ -161,29 +161,3 @@ match (x_select != "No Selection") + (y_select != "No Selection") + (z_select !=
   case 3:
     # 3D scatter code here
     st.text("Triple")
-
-if (x_select != "No Selection") + (y_select != "No Selection") + (z_select != "No Selection") == 2:
-  for select in [x_select, y_select, z_select]:
-    if select == "No Selection":
-      selections = [val for val in [x_select, y_select, z_select] if val != select]
-      colors = ["red", "blue"]
-      files = [file for file in st.session_state.facs_dataframes if "Reference Group" not in file["name"] and "Unmixed" in file["name"]]
-      fig, axs = plt.subplots(nrows = 5, ncols = 5, figsize = (24, 30)) # math.ceil(len(files) / 2 / 5)
-      # axs = [ax for row in axs for ax in row]
-      axs = axs.flatten()
-      for i in range(0, len(files), 2):
-        ax = axs[int(i / 2)]
-        file = files[int(i / 2)]
-        ax.scatter(file["data"][selections[0]], file["data"][selections[1]], s = 2, color = colors[0])
-        ax.set_title(textwrap.fill(file["name"][file["name"].index("TubeRack"):file["name"].index(".fcs")]), 30)
-
-        ax.set_xlabel(selections[0])
-        ax.set_xscale("log")
-        ax.set_xlim(left = 1, right = pow(10, 7))
-
-        ax.set_ylabel(selections[1])
-        ax.set_yscale("log")
-        ax.set_ylim(bottom = 1, top = pow(10, 7))
-        
-      st.pyplot(fig)
-      break
