@@ -63,12 +63,13 @@ def filter_cells(df):
   df = df[oval(df["FSC-H"], df["SSC-H"], 2.54, 1.29, 2.08, 2.18, math.pi * 1.75) <= 1]
 
   # Zombie (if present)
-  if "Zombie" in df.keys():
-    print("stuff")
+  for key in df.keys():
+    if "Zombie" in key:
+      df = df[(2900 <= df[key]) & (df[key] <= 148000)]
 
   # Single Cells
+  df = df[-205000 <= df["FSC-H"] - 0.58 * df["FSC-A"] ] # FCS-H - 0.58*FSC-A = 275,000/-205,000
   return df
-st.text(math.sin(3.14))
 
 if x_select != "No Selection" and y_select != "No Selection":
   colors = ["red", "blue"]
@@ -76,23 +77,30 @@ if x_select != "No Selection" and y_select != "No Selection":
   opacity_slider2 = st.slider("Dox Opacity", 0.0, 1.0, 1.0, 0.01)
   colors = [(1, 0, 0, opacity_slider1), (0, 0, 1, opacity_slider2)]
   files = [file for file in st.session_state.facs_dataframes if "Reference Group" not in file["name"] and "Unmixed" in file["name"]]
-  fig, axs = plt.subplots(nrows = 5, ncols = 5, figsize = (24, 30)) # math.ceil(len(files) / 2 / 5)
+  fig, axs = plt.subplots(nrows = 2, ncols = 2, figsize = (24, 30)) # math.ceil(len(files) / 2 / 5)
   # axs = [ax for row in axs for ax in row]
   axs = axs.flatten()
   for i in range(1, len(files), 2):
     ax = axs[int(i / 2)]
     file_mock = files[i - 1]
     file_dox = files[i]
-    ax.scatter(file_mock["data"][x_select], file_mock["data"][y_select], s = 1, color = colors[0])
-    ax.scatter(file_dox["data"][x_select], file_dox["data"][y_select], s = 1, color = colors[1])
+    filtered_mock = file_mock["data"]
+    ax.scatter(filtered_mock[x_select], filtered_mock[y_select], s = 1, color = colors[0])
+    filtered_dox = file_dox["data"]
+    ax.scatter(filtered_dox[x_select], filtered_dox[y_select], s = 1, color = colors[1])
     ax.set_title(textwrap.fill(file_mock["name"][file_mock["name"].index("TubeRack"):file_mock["name"].index(".fcs")], 30))
+    def eqn(a, b):
+      return [[0, 4*10**6], [b, a*4*10**6+b]]
+    a=0.58
+    ax.plot([0, 4*10**6], eqn(a, 0.275*10**6)[1], color = "green")
+    ax.plot([0, 4*10**6], eqn(a, -0.205*10**6)[1], color = "green")
 
     ax.set_xlabel(x_select)
-    ax.set_xscale("log")
-    ax.set_xlim(left = 1, right = pow(10, 7))
+    # ax.set_xscale("log")
+    ax.set_xlim(left = 0, right = 4.5*10**6)
 
     ax.set_ylabel(y_select)
-    ax.set_yscale("log")
-    ax.set_ylim(bottom = 1, top = pow(10, 7))
+    # ax.set_yscale("log")
+    ax.set_ylim(bottom = 0, top = 4.5*10**6)
     
   st.pyplot(fig)
