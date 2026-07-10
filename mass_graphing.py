@@ -55,20 +55,26 @@ with selectbox_columns[1]:
   y_select = st.selectbox(label = "y-axis", options = ["No Selection"] + list(set(key for df in st.session_state.facs_dataframes for key in df["data"].keys())), key = "y-axis", disabled = len(st.session_state.facs_dataframes) == 0)
 
 def filter_cells(df):
+  print(f"All Cells: {len(df)}")
   # Live Cells
   def oval(x, y, semi_major, semi_minor, x_offset, y_offset, rads = 0, default_sin = None, default_cos = None):
     sin_theta = math.sin(rads) if default_sin is None else default_sin
     cos_theta = math.cos(rads) if default_cos is None else default_cos
     return ((x - x_offset) * cos_theta - (y - y_offset) * sin_theta)**2 / semi_major**2 + ((x - x_offset) * sin_theta + (y - y_offset) * cos_theta)**2 / semi_minor**2
-  df = df[oval(df["FSC-H"], df["SSC-H"], 2.54, 1.29, 2.08, 2.18, math.pi * 1.75) <= 1]
+  # print(df["FSC-H"][0], df["SSC-H"][0])
+  # print(oval(df["FSC-H"][0], df["SSC-H"][0], 2.54 * 10**6, 1.29 * 10**6, 2.08 * 10**6, 2.18 * 10**6, math.pi * 1.75))
+  df = df[oval(df["FSC-H"], df["SSC-H"], 2.54 * 10**6, 1.29 * 10**6, 2.08 * 10**6, 2.18 * 10**6, math.pi * 1.75) <= 1]
+  print(f"Live Cells: {len(df)}")
 
   # Zombie (if present)
   for key in df.keys():
     if "Zombie" in key:
       df = df[(2900 <= df[key]) & (df[key] <= 148000)]
+  print(f"Live Cells (Zombie): {len(df)}")
 
   # Single Cells
-  df = df[-205000 <= df["FSC-H"] - 0.58 * df["FSC-A"] ] # FCS-H - 0.58*FSC-A = 275,000/-205,000
+  df = df[(-205000 <= (df["FSC-H"] - 0.58 * df["FSC-A"])) & ((df["FSC-H"] - 0.58 * df["FSC-A"]) <= 275000)] # FCS-H - 0.58*FSC-A = 275,000/-205,000
+  print(f"Single Cells: {len(df)}")
   return df
 
 if x_select != "No Selection" and y_select != "No Selection":
@@ -84,9 +90,9 @@ if x_select != "No Selection" and y_select != "No Selection":
     ax = axs[int(i / 2)]
     file_mock = files[i - 1]
     file_dox = files[i]
-    filtered_mock = file_mock["data"]
+    filtered_mock = filter_cells(file_mock["data"])
     ax.scatter(filtered_mock[x_select], filtered_mock[y_select], s = 1, color = colors[0])
-    filtered_dox = file_dox["data"]
+    filtered_dox = filter_cells(file_dox["data"])
     ax.scatter(filtered_dox[x_select], filtered_dox[y_select], s = 1, color = colors[1])
     ax.set_title(textwrap.fill(file_mock["name"][file_mock["name"].index("TubeRack"):file_mock["name"].index(".fcs")], 30))
     def eqn(a, b):
